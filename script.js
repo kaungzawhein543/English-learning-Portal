@@ -16,6 +16,7 @@ const addVocabBtn = document.getElementById('addVocabBtn');
 const vocabList = document.getElementById('vocabList');
 const topicSearch = document.getElementById('topicSearch');
 const grammarSearch = document.getElementById('grammarSearch');
+const grammarLevelFilter = document.getElementById('grammarLevelFilter');
 const themeToggle = document.getElementById('themeToggle');
 
 // Dark Mode Initialization
@@ -90,6 +91,7 @@ topicForm.addEventListener('submit', (e) => {
 grammarForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const level = document.getElementById('level').value;
+    const title = document.getElementById('grammarTitle').value;
     const pattern = document.getElementById('pattern').value;
     const explanation = document.getElementById('explanation').value;
     const examples = document.getElementById('examples').value;
@@ -100,6 +102,7 @@ grammarForm.addEventListener('submit', (e) => {
     const newNote = {
         id: Date.now().toString(),
         level,
+        title,
         pattern,
         explanation,
         examples: examplesList
@@ -229,6 +232,33 @@ function createTopicElement(topic, query = '') {
     addVocabBtn.addEventListener('click', () => toggleVocabForm(topic.id, div));
     div.appendChild(addVocabBtn);
 
+    // Add Action Buttons container
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'item-actions';
+
+    const editBtn = document.createElement('button');
+    editBtn.className = 'action-btn edit-btn';
+    editBtn.textContent = '✏️ Edit';
+    editBtn.addEventListener('click', () => showEditTopicForm(topic, div, li));
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'action-btn delete-btn';
+    deleteBtn.textContent = '🗑️ Delete';
+    deleteBtn.addEventListener('click', () => {
+        if (confirm(`Are you sure you want to delete topic "${topic.title}"?`)) {
+            topics = topics.filter(t => t.id !== topic.id);
+            // Also move children up or delete them (simple choice: delete children)
+            topics = topics.filter(t => t.parentId !== topic.id);
+            saveTopics();
+            updateParentSelect();
+            renderTree();
+        }
+    });
+
+    actionsDiv.appendChild(editBtn);
+    actionsDiv.appendChild(deleteBtn);
+    div.appendChild(actionsDiv);
+
     li.appendChild(div);
 
     // Function to recursively check children logic from before
@@ -261,13 +291,75 @@ function createTopicElement(topic, query = '') {
     return li;
 }
 
+// Edit Topic Logic
+function showEditTopicForm(topic, topicDiv, liElement) {
+    const editForm = document.createElement('form');
+    editForm.className = 'edit-form-inline';
+
+    // Create options for parent select
+    let parentOptions = '<option value="">None (Root)</option>';
+    topics.forEach(t => {
+        if (t.id !== topic.id) { // Cannot be parent of itself
+            parentOptions += `<option value="${t.id}" ${t.id === topic.parentId ? 'selected' : ''}>${t.title}</option>`;
+        }
+    });
+
+    editForm.innerHTML = `
+        <div class="form-group">
+            <label>Title:</label>
+            <input type="text" class="edit-title" value="${topic.title}" required>
+        </div>
+        <div class="form-group">
+            <label>Description:</label>
+            <input type="text" class="edit-description" value="${topic.description || ''}">
+        </div>
+        <div class="form-group">
+            <label>Parent Topic:</label>
+            <select class="edit-parent">
+                ${parentOptions}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Content:</label>
+            <textarea class="edit-content" rows="4">${topic.content || ''}</textarea>
+        </div>
+        <div class="edit-actions">
+            <button type="submit" class="add-existing-vocab-btn">Save Changes</button>
+            <button type="button" class="cancel-vocab-btn cancel-edit">Cancel</button>
+        </div>
+    `;
+
+    editForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        topic.title = editForm.querySelector('.edit-title').value;
+        topic.description = editForm.querySelector('.edit-description').value;
+        topic.parentId = editForm.querySelector('.edit-parent').value || null;
+        topic.content = editForm.querySelector('.edit-content').value;
+
+        saveTopics();
+        updateParentSelect();
+        renderTree(topicSearch ? topicSearch.value : '');
+    });
+
+    editForm.querySelector('.cancel-edit').addEventListener('click', () => {
+        // Re-render the tree to dismiss the edit form and restore original view
+        renderTree(topicSearch ? topicSearch.value : '');
+    });
+
+    // Replace the specific block's content with the form
+    liElement.replaceChild(editForm, topicDiv);
+}
+
 // Render grammar notes
-function renderGrammarNotes(searchQuery = '') {
+function renderGrammarNotes(searchQuery = '', levelFilter = 'All') {
     notesContainer.innerHTML = '';
     const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
     const query = searchQuery.toLowerCase();
 
     levels.forEach(level => {
+        // Obey the level filter
+        if (levelFilter !== 'All' && level !== levelFilter) return;
+
         let levelNotes = grammarNotes.filter(n => n.level === level);
 
         if (query) {
@@ -275,11 +367,12 @@ function renderGrammarNotes(searchQuery = '') {
                 // Support backward compatibility for objects with 'note' instead of modern structure
                 if (n.note) return n.note.toLowerCase().includes(query);
 
+                const matchTitle = n.title && n.title.toLowerCase().includes(query);
                 const matchPattern = n.pattern && n.pattern.toLowerCase().includes(query);
                 const matchExplanation = n.explanation && n.explanation.toLowerCase().includes(query);
                 const matchExamples = n.examples && n.examples.some(ex => ex.toLowerCase().includes(query));
 
-                return matchPattern || matchExplanation || matchExamples;
+                return matchTitle || matchPattern || matchExplanation || matchExamples;
             });
         }
 
@@ -307,7 +400,10 @@ function renderGrammarNotes(searchQuery = '') {
                 if (!noteObj.pattern && !noteObj.explanation && noteObj.note) {
                     div.innerHTML = `<p>${noteObj.note}</p>`;
                 } else {
-                    let html = `<div class="grammar-header"><h4><span class="grammar-label">Pattern:</span> ${noteObj.pattern || 'N/A'}</h4></div>`;
+                    let html = `<div class="grammar-header">
+                        <h4 style="margin-bottom: 5px; color: var(--text-main); font-size: 1.2rem;">${noteObj.title || 'Untitled Grammar Note'}</h4>
+                        <h4><span class="grammar-label">Pattern:</span> ${noteObj.pattern || 'N/A'}</h4>
+                    </div>`;
                     if (noteObj.explanation) {
                         html += `<div class="grammar-explanation"><p><strong>Explanation:</strong> ${noteObj.explanation}</p></div>`;
                     }
@@ -322,11 +418,114 @@ function renderGrammarNotes(searchQuery = '') {
                     div.innerHTML = html;
                 }
 
+                // Add Edit / Delete Actions for Grammar
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'item-actions';
+
+                const editBtn = document.createElement('button');
+                editBtn.className = 'action-btn edit-btn';
+                editBtn.textContent = '✏️ Edit';
+                editBtn.addEventListener('click', () => showEditGrammarForm(noteObj, div));
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'action-btn delete-btn';
+                deleteBtn.textContent = '🗑️ Delete';
+                deleteBtn.addEventListener('click', () => {
+                    if (confirm(`Are you sure you want to delete this grammar note?`)) {
+                        grammarNotes = grammarNotes.filter(n => n.id !== noteObj.id);
+                        saveGrammarNotes();
+                        renderGrammarNotes(grammarSearch ? grammarSearch.value : '', grammarLevelFilter ? grammarLevelFilter.value : 'All');
+                    }
+                });
+
+                actionsDiv.appendChild(editBtn);
+                actionsDiv.appendChild(deleteBtn);
+                div.appendChild(actionsDiv);
+
                 section.appendChild(div);
             });
         }
         notesContainer.appendChild(section);
     });
+}
+
+// Edit Grammar Logic
+function showEditGrammarForm(noteObj, noteDiv) {
+    const editForm = document.createElement('form');
+    editForm.className = 'edit-form-inline';
+
+    // Normalize legacy formats for editing context safely
+    const isLegacy = !noteObj.pattern && !noteObj.explanation && noteObj.note;
+    const titleVal = isLegacy ? '' : (noteObj.title || '');
+    const patternVal = isLegacy ? '' : (noteObj.pattern || '');
+    const explainVal = isLegacy ? '' : (noteObj.explanation || '');
+    const examplesText = isLegacy ? '' : (noteObj.examples ? noteObj.examples.join('\n') : '');
+
+    editForm.innerHTML = `
+        <div class="form-group">
+            <label>Level:</label>
+            <select class="edit-g-level">
+                <option value="A1" ${noteObj.level === 'A1' ? 'selected' : ''}>A1</option>
+                <option value="A2" ${noteObj.level === 'A2' ? 'selected' : ''}>A2</option>
+                <option value="B1" ${noteObj.level === 'B1' ? 'selected' : ''}>B1</option>
+                <option value="B2" ${noteObj.level === 'B2' ? 'selected' : ''}>B2</option>
+                <option value="C1" ${noteObj.level === 'C1' ? 'selected' : ''}>C1</option>
+                <option value="C2" ${noteObj.level === 'C2' ? 'selected' : ''}>C2</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Title:</label>
+            <input type="text" class="edit-g-title" value="${titleVal}" required>
+        </div>
+        <div class="form-group">
+            <label>Pattern/Structure:</label>
+            <input type="text" class="edit-g-pattern" value="${patternVal}" required>
+        </div>
+        <div class="form-group">
+            <label>Explanation:</label>
+            <textarea class="edit-g-explanation" rows="3" required>${explainVal}</textarea>
+        </div>
+        <div class="form-group">
+            <label>Examples (one per line):</label>
+            <textarea class="edit-g-examples" rows="3">${examplesText}</textarea>
+        </div>
+        <div class="edit-actions">
+            <button type="submit" class="add-existing-vocab-btn">Save</button>
+            <button type="button" class="cancel-vocab-btn cancel-edit">Cancel</button>
+        </div>
+    `;
+
+    // Overwrite old legacy "note" string block via backward compatibility normalization warning
+    if (isLegacy && noteObj.note) {
+        const legacyWarning = document.createElement('p');
+        legacyWarning.style.color = 'var(--warning)';
+        legacyWarning.style.fontSize = '0.9em';
+        legacyWarning.textContent = "Warning: Updating this legacy note will convert it to the new structured format. Your old note content was: " + noteObj.note;
+        editForm.prepend(legacyWarning);
+    }
+
+    editForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        noteObj.level = editForm.querySelector('.edit-g-level').value;
+        noteObj.title = editForm.querySelector('.edit-g-title').value;
+        noteObj.pattern = editForm.querySelector('.edit-g-pattern').value;
+        noteObj.explanation = editForm.querySelector('.edit-g-explanation').value;
+
+        const examplesRaw = editForm.querySelector('.edit-g-examples').value;
+        noteObj.examples = examplesRaw.split('\n').map(ex => ex.trim()).filter(ex => ex.length > 0);
+
+        // Remove old 'note' property if it existed to fully convert to modern layout
+        if (noteObj.hasOwnProperty('note')) delete noteObj.note;
+
+        saveGrammarNotes();
+        renderGrammarNotes(grammarSearch ? grammarSearch.value : '', grammarLevelFilter ? grammarLevelFilter.value : 'All');
+    });
+
+    editForm.querySelector('.cancel-edit').addEventListener('click', () => {
+        renderGrammarNotes(grammarSearch ? grammarSearch.value : '', grammarLevelFilter ? grammarLevelFilter.value : 'All');
+    });
+
+    noteDiv.replaceWith(editForm);
 }
 
 // Toggle vocab form for existing topic
@@ -412,10 +611,15 @@ if (topicSearch) {
     });
 }
 
-if (grammarSearch) {
-    grammarSearch.addEventListener('input', (e) => {
-        renderGrammarNotes(e.target.value);
-    });
+if (grammarSearch || grammarLevelFilter) {
+    const handleGrammarFilter = () => {
+        const query = grammarSearch ? grammarSearch.value : '';
+        const level = grammarLevelFilter ? grammarLevelFilter.value : 'All';
+        renderGrammarNotes(query, level);
+    };
+
+    if (grammarSearch) grammarSearch.addEventListener('input', handleGrammarFilter);
+    if (grammarLevelFilter) grammarLevelFilter.addEventListener('change', handleGrammarFilter);
 }
 
 // Initialize

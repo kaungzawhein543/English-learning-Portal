@@ -652,6 +652,105 @@ button:active {
     margin-bottom: 0;
 }
 
+/* --- New UI Enhancements (Scrollables, Filters, Edit Mode) --- */
+.scrollable-container {
+    max-height: calc(100vh - 350px);
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+/* Custom Scrollbar for sleek UI */
+.scrollable-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.scrollable-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scrollable-container::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 10px;
+}
+
+.scrollable-container::-webkit-scrollbar-thumb:hover {
+    background-color: var(--text-lighter);
+}
+
+.grammar-search-container {
+    display: flex;
+    gap: 10px;
+}
+
+.level-filter {
+    flex-shrink: 0;
+    width: 140px;
+    padding: var(--spacing-sm, 0.5rem) var(--spacing-md, 1rem);
+    border: 1px solid var(--input-border);
+    border-radius: var(--border-radius-sm);
+    font-size: 0.95rem;
+    background-color: var(--input-bg);
+    color: var(--text-main);
+    cursor: pointer;
+}
+
+/* Edit & Delete Action Buttons */
+.item-actions {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    gap: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.topic-item:hover .item-actions,
+.note-item:hover .item-actions {
+    opacity: 1;
+}
+
+.action-btn {
+    background: var(--surface-border);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    box-shadow: none;
+    transition: all 0.2s;
+}
+
+.action-btn:hover {
+    background: var(--hover-bg);
+    color: var(--text-main);
+}
+
+.action-btn.delete-btn:hover {
+    background: #fee2e2;
+    color: #dc2626;
+    border-color: #fca5a5;
+}
+
+body.dark-mode .action-btn.delete-btn:hover {
+    background: rgba(220, 38, 38, 0.2);
+}
+
+.edit-form-inline {
+    background: var(--surface-solid);
+    padding: 1rem;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--primary);
+    margin-bottom: 1rem;
+}
+
+.edit-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
 @media (max-width: 768px) {
     .header h1 {
         font-size: 2rem;

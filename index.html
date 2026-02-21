@@ -73,7 +73,7 @@
                         <div class="search-container">
                             <input type="text" id="topicSearch" placeholder="Search topics..." class="search-input">
                         </div>
-                        <ul id="treeList"></ul>
+                        <ul id="treeList" class="scrollable-container"></ul>
                     </div>
                 </div>
             </div>
@@ -96,6 +96,11 @@
                                     </select>
                                 </div>
                                 <div class="form-group">
+                                    <label for="grammarTitle">Title:</label>
+                                    <input type="text" id="grammarTitle" required
+                                        placeholder="e.g. Present Perfect vs Past Simple">
+                                </div>
+                                <div class="form-group">
                                     <label for="pattern">Pattern/Structure:</label>
                                     <input type="text" id="pattern" required>
                                 </div>
@@ -115,11 +120,20 @@
 
                     <div class="tree-section">
                         <h2>📚 Grammar Notes by Level</h2>
-                        <div class="search-container">
+                        <div class="search-container grammar-search-container">
                             <input type="text" id="grammarSearch" placeholder="Search grammar notes..."
                                 class="search-input">
+                            <select id="grammarLevelFilter" class="level-filter">
+                                <option value="All">All Levels</option>
+                                <option value="A1">A1</option>
+                                <option value="A2">A2</option>
+                                <option value="B1">B1</option>
+                                <option value="B2">B2</option>
+                                <option value="C1">C1</option>
+                                <option value="C2">C2</option>
+                            </select>
                         </div>
-                        <div id="notesContainer"></div>
+                        <div id="notesContainer" class="scrollable-container"></div>
                     </div>
                 </div>
             </div>
