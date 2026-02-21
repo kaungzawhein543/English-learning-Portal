@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Learning Portal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app">
+        <header class="header">
+            <div class="header-content">
+                <h1>English Learning Portal</h1>
+                <button id="themeToggle" class="theme-toggle" aria-label="Toggle Dark Mode">
+                    <span class="sun-icon">☀️</span>
+                    <span class="moon-icon">🌙</span>
+                </button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="tabs">
+                <button id="topicsTab" class="tab active">📚 Topics</button>
+                <button id="grammarTab" class="tab">📝 Grammar Notes</button>
+            </div>
+
+            <div id="topicsSection" class="section">
+                <div class="content-grid">
+                    <div class="form-section">
+                        <div id="addTopicForm" class="form-card">
+                            <h2>➕ Add New Topic</h2>
+                            <form id="topicForm" onsubmit="event.preventDefault(); return false;">
+                                <div class="form-group">
+                                    <label for="title">Title:</label>
+                                    <input type="text" id="title" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="description">Description:</label>
+                                    <input type="text" id="description">
+                                </div>
+                                <div class="form-group">
+                                    <label for="parentId">Parent Topic:</label>
+                                    <select id="parentId">
+                                        <option value="">None (Root)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="content">Content:</label>
+                                    <textarea id="content" rows="4"></textarea>
+                                </div>
+                                <div class="vocab-input">
+                                    <h3>📖 Add Vocabulary</h3>
+                                    <div class="form-group">
+                                        <label for="vocabWord">English Word:</label>
+                                        <input type="text" id="vocabWord">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="vocabDef">Definition:</label>
+                                        <input type="text" id="vocabDef">
+                                    </div>
+                                    <button type="button" id="addVocabBtn">➕ Add Vocabulary</button>
+                                </div>
+                                <div id="vocabList" class="vocab-list"></div>
+                                <button type="submit">✅ Add Topic</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="tree-section">
+                        <h2>🌳 Topic Tree</h2>
+                        <div class="search-container">
+                            <input type="text" id="topicSearch" placeholder="Search topics..." class="search-input">
+                        </div>
+                        <ul id="treeList"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="grammarSection" class="section hidden">
+                <div class="content-grid">
+                    <div class="form-section">
+                        <div id="addGrammarForm" class="form-card">
+                            <h2>📝 Add Grammar Note</h2>
+                            <form id="grammarForm" onsubmit="event.preventDefault(); return false;">
+                                <div class="form-group">
+                                    <label for="level">Level:</label>
+                                    <select id="level">
+                                        <option value="A1">A1 - Beginner</option>
+                                        <option value="A2">A2 - Elementary</option>
+                                        <option value="B1">B1 - Intermediate</option>
+                                        <option value="B2">B2 - Upper Intermediate</option>
+                                        <option value="C1">C1 - Advanced</option>
+                                        <option value="C2">C2 - Proficiency</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="pattern">Pattern/Structure:</label>
+                                    <input type="text" id="pattern" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="explanation">Explanation:</label>
+                                    <textarea id="explanation" rows="3" required></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="examples">Example Sentences:</label>
+                                    <textarea id="examples" rows="3"
+                                        placeholder="Enter examples (one per line)"></textarea>
+                                </div>
+                                <button type="submit">✅ Add Note</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="tree-section">
+                        <h2>📚 Grammar Notes by Level</h2>
+                        <div class="search-container">
+                            <input type="text" id="grammarSearch" placeholder="Search grammar notes..."
+                                class="search-input">
+                        </div>
+                        <div id="notesContainer"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

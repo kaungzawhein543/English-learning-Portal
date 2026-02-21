@@ -1,0 +1,6 @@
+# Ignore old css copies
+style_previous.css
+
+# System files
+.DS_Store
+Thumbs.db
