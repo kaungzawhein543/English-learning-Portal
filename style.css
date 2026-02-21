@@ -544,6 +544,7 @@ button:active {
     margin: 0.75rem 0;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     border-left: 4px solid var(--primary);
+    position: relative;
 }
 
 .note-item:hover {
@@ -696,11 +697,10 @@ button:active {
 
 /* Edit & Delete Action Buttons */
 .item-actions {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
     display: flex;
+    justify-content: flex-end;
     gap: 0.5rem;
+    margin-top: 1rem;
     opacity: 0;
     transition: opacity 0.2s ease;
 }
